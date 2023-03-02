@@ -8,17 +8,17 @@ import math
 from std_msgs.msg import String
 from geometry_msgs.msg import Twist
 
-dir_dict = {1:'kwk', -1:'kbk', 2:'kcrR', 3:'kcrL', 0:'kbalance'}
+dir_dict = {1:'kcrF', 2:'kwkF', 3:'ktrF', -1:'kbk', 4:'kcrL', 5:'kcrR', 0:'kbalance'}
 
 class Driver:
 
-    def __init__(self, port='/dev/ttyS0'):
+    def __init__(self, port='/dev/ttyUSB0'):
         self.dir = 0
         rospy.init_node('cmd_vel_listener')
         rospy.Subscriber("/cmd_vel", Twist, self.callback)
         self.ser = serial.Serial(
         port=port,
-        baudrate=57600,
+        baudrate=115200,
         parity=serial.PARITY_NONE,
         stopbits=serial.STOPBITS_ONE,
         bytesize=serial.EIGHTBITS,
@@ -30,14 +30,18 @@ class Driver:
         rospy.loginfo("Linear Components: [%f, %f, %f]"%(msg.linear.x, msg.linear.y, msg.linear.z))
         rospy.loginfo("Angular Components: [%f, %f, %f]"%(msg.angular.x, msg.angular.y, msg.angular.z))
         
-        if msg.linear.x > 0:
+        if msg.linear.x > 0 and msg.linear.x <= 0.5:
             dir = 1
+        elif msg.linear.x > 0.5 and msg.linear.x < 1.0:
+            dir = 2
+        elif msg.linear.x == 1.0:
+            dir = 3
         elif msg.linear.x < 0:
             dir = -1
         elif msg.angular.z > 0:
-            dir = 2
+            dir = 4
         elif msg.angular.z < 0:
-            dir = 3
+            dir = 5
         else:
             dir = 0
  
